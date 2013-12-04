@@ -1,0 +1,4 @@
+[Project]
+Name=svmplayer
+Manager=KDevCMakeManager
+VersionControl=kdevgit
