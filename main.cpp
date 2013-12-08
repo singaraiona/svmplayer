@@ -7,8 +7,8 @@ using namespace svmp;
 int main ( int argc, char **argv ) {
 
     SVMPlayer player;
-    //SVM_ASSERT_MSG ( argc > 1, "To few arguments." );
-    //player.play ( argv[1] );
-    player.play ( "sop://broker.sopcast.com:3912/141110" );
+    SVM_ASSERT_MSG ( argc > 1, "To few arguments." );
+    player.play ( argv[1] );
+    //player.play ( "sop://broker.sopcast.com:3912/141110" );
     return 0;
 }

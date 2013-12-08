@@ -61,6 +61,8 @@ void SVMWindow::raise() {
         if ( e.type == Expose ) {
         } else if ( e.type == ClientMessage ) {
             break;
-        } 
+        } else if ( e.type == DestroyNotify ) {
+            break;
+        }
     }
 }

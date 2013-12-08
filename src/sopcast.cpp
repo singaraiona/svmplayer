@@ -33,32 +33,12 @@ namespace {
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 enum {
-    SleepTimeSec = 10
+    SleepTimeSec = 1
 };
 
-char* sopenv[] = {"LD_LIBRARY_PATH=/home/volonter/sopcast-gui/", NULL};
-
-std::string getpath() {
-    std::string path = "";
-    pid_t pid = getpid();
-    char buf[20] = {0};
-    sprintf ( buf,"%d",pid );
-    std::string _link = "/proc/";
-    _link.append ( buf );
-    _link.append ( "/exe" );
-    char proc[512];
-    int ch = readlink ( _link.c_str(),proc,512 );
-    if ( ch != -1 ) {
-        proc[ch] = 0;
-        path = proc;
-        std::string::size_type t = path.find_last_of ( "/" );
-        path = path.substr ( 0,t );
-    }
-
-    //return path + "/";
-
-    return "/home/volonter/sopcast-gui/";
-}
+char* homedir = getenv ( "HOME" );
+char execpath[1024];
+char ld_library_path[1040];
 
 }
 
@@ -67,6 +47,9 @@ using namespace svmp;
 SopCast::SopCast()
     :m_soport ( 3908 ) {
 
+    snprintf ( execpath, sizeof ( execpath ), homedir, "/sopcast" );
+    snprintf ( ld_library_path, sizeof ( ld_library_path ), "LD_LIBRARY_PATH=", execpath );
+    snprintf ( execpath, sizeof ( execpath ), "svmplayer" );
 }
 
 SopCast::~SopCast() {
@@ -82,14 +65,14 @@ int SopCast::start ( const std::string& url, int port ) {
     snprintf ( csoport, sizeof ( csoport ), "%d", m_soport );
     snprintf ( cport, sizeof ( cport ), "%d", port );
 
-    char* sopargs[] = {"/home/volonter/sopcast-gui/sp-sc-auth", curl, csoport, cport, NULL};
-
     m_sopid = fork();
 
     SVM_ASSERT_MSG ( m_sopid >= 0, "Fork error." );
 
     if ( m_sopid == 0 ) {
-        execve ( "/home/volonter/sopcast-gui/sp-sc-auth", sopargs, sopenv );
+        char* sopenv[] = {ld_library_path, NULL};
+        char* sopargs[] = {execpath, curl, csoport, cport, NULL};
+        execve ( execpath, sopargs, sopenv );
         exit ( SVMSuccess );
     }
 

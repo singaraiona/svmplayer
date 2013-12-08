@@ -23,7 +23,7 @@
 namespace svmp {
 
 #define SVM_ASSERT_MSG(condition, message) do { \
-if (!(condition)) { std::cout << message << std::endl; } \
+if (!(condition)) { std::cout << message << " "; } \
 assert ((condition)); } while(false)
 
 }

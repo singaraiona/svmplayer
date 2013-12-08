@@ -33,9 +33,8 @@ namespace {
 struct VlcData {
     std::string source;
     Window winid;  
+    int terminate;
 };
-
-int terminate = 0;
 
 void* vlc_play ( void* data ) {
     libvlc_instance_t* inst;
@@ -51,7 +50,7 @@ void* vlc_play ( void* data ) {
     libvlc_media_player_set_xwindow ( mp, vlcdata.winid );
     libvlc_media_player_play ( mp );
 
-    while ( !terminate ) {
+    while ( vlcdata.terminate ) {
         //play
         if ( !libvlc_media_player_is_playing
                 || libvlc_media_player_get_position < 0
@@ -61,12 +60,10 @@ void* vlc_play ( void* data ) {
 
         }
     }
-
+    
     libvlc_media_player_stop ( mp );
     libvlc_media_player_release ( mp );
     libvlc_release ( inst );
-
-    terminate = 1;
 }
 
 }
@@ -90,15 +87,17 @@ void SVMPlayer::play ( const std::string& url ) {
     SVMWindow window;
     data.winid = window.create();
     data.source = "http://localhost:8908";
+    data.terminate = 0;
     
     pthread_t t1;
     pthread_create ( &t1, NULL, &vlc_play, &data );
 
     window.raise();
-
-    terminate = 1;
-
+    
+    data.terminate = 1;
+    
     pthread_join ( t1, 0 );
+    
     finish();
 }
 
