@@ -21,13 +21,23 @@
 #include "sopcast.h"
 //
 #include <stdio.h>
-#include <stdlib.h>
+
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>
+#include <string.h>
+#include <svm_assert.h>
 
 namespace {
+
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+
+enum {
+    SleepTimeSec = 10
+};
+
+char* sopenv[] = {"LD_LIBRARY_PATH=/home/volonter/sopcast-gui/", NULL};
+
 std::string getpath() {
     std::string path = "";
     pid_t pid = getpid();
@@ -46,13 +56,16 @@ std::string getpath() {
     }
 
     //return path + "/";
-    
+
     return "/home/volonter/sopcast-gui/";
 }
+
 }
+
 using namespace svmp;
 
-SopCast::SopCast() {
+SopCast::SopCast()
+    :m_soport ( 3908 ) {
 
 }
 
@@ -61,24 +74,35 @@ SopCast::~SopCast() {
 }
 
 int SopCast::start ( const std::string& url, int port ) {
+    char curl[256];
+    char csoport[16];
+    char cport[16];
 
-    pid_t pid = 0;
-    std::string launch = url + " " + std::to_string ( _soport ) + " " + std::to_string ( port );
+    strncpy ( curl, url.c_str(), url.size() + 1 );
+    snprintf ( csoport, sizeof ( csoport ), "%d", m_soport );
+    snprintf ( cport, sizeof ( cport ), "%d", port );
 
-    pid = fork();
+    char* sopargs[] = {"/home/volonter/sopcast-gui/sp-sc-auth", curl, csoport, cport, NULL};
 
-    if ( pid < 0 ) {
-        //fork error
-        perror ( "fork" );
-        exit ( EXIT_FAILURE );
+    m_sopid = fork();
+
+    SVM_ASSERT_MSG ( m_sopid >= 0, "Fork error." );
+
+    if ( m_sopid == 0 ) {
+        execve ( "/home/volonter/sopcast-gui/sp-sc-auth", sopargs, sopenv );
+        exit ( SVMSuccess );
     }
-    if ( pid == 0 ) {
-        std::string path = getpath();
-        std::string target = "LD_LIBRARY_PATH=" + path + "lib " + path + "sp-sc-auth";
-        std::cout << target << " " << launch << std::endl;
-        execl ( target.c_str(), launch.c_str() , 0, 0 );
-        exit ( 0 );
-    }
 
-    return 0;
+    sleep ( SleepTimeSec );
+
+    return SVMSuccess;
 }
+
+void SopCast::stop() {
+    if ( m_sopid ) {
+        kill ( m_sopid, SIGTERM );
+        int status;
+        waitpid ( m_sopid, &status, CLD_EXITED | CLD_KILLED );
+    }
+}
+

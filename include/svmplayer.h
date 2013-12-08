@@ -21,8 +21,6 @@
 #ifndef SVMPLAYER_H
 #define SVMPLAYER_H
 //
-#include<X11/Xlib.h>
-//
 #include <vlc/vlc.h>
 //
 #include "sopcast.h"
@@ -35,7 +33,10 @@ public:
     ~SVMPlayer();
     void play(const std::string& url);
 private:
-    SopCast _sp;
+    SopCast m_sopcast;
+
+private:
+    void finish();
 };
 
 }

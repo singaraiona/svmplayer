@@ -22,6 +22,8 @@
 #define SOPCAST_H
 
 #include <string>
+#include <unistd.h>
+#include <stdlib.h>
 
 namespace svmp {
 
@@ -29,9 +31,17 @@ class SopCast {
 public:
     SopCast();
     ~SopCast();
-    int start(const std::string& url, int port = 3908);
+    int start ( const std::string& url, int port = 8908 );
+    void stop();
+public:
+    enum {
+        SVMSuccess = 0,
+        SVMStreamError = 1,
+    };
+
 private:
-  int _soport;
+    int m_soport;
+    pid_t m_sopid = 0;
 };
 
 }
