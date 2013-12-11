@@ -33,7 +33,7 @@ namespace {
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 enum {
-    SleepTimeSec = 1
+    SleepTimeSec = 20
 };
 
 char* homedir = getenv ( "HOME" );
@@ -47,9 +47,12 @@ using namespace svmp;
 SopCast::SopCast()
     :m_soport ( 3908 ) {
 
-    snprintf ( execpath, sizeof ( execpath ), homedir, "/sopcast" );
-    snprintf ( ld_library_path, sizeof ( ld_library_path ), "LD_LIBRARY_PATH=", execpath );
-    snprintf ( execpath, sizeof ( execpath ), "svmplayer" );
+    snprintf ( execpath, sizeof ( execpath ), "%s", homedir );
+    strncat ( execpath, "/sopcast", sizeof ( execpath ) );
+    snprintf ( ld_library_path, sizeof ( ld_library_path ), "LD_LIBRARY_PATH=" );
+    strncat ( ld_library_path, execpath, sizeof ( ld_library_path ));
+    strncat ( ld_library_path, "/lib", sizeof ( ld_library_path ));
+    strncat ( execpath, "/sp-sc-auth", sizeof ( execpath ) );
 }
 
 SopCast::~SopCast() {
@@ -72,6 +75,7 @@ int SopCast::start ( const std::string& url, int port ) {
     if ( m_sopid == 0 ) {
         char* sopenv[] = {ld_library_path, NULL};
         char* sopargs[] = {execpath, curl, csoport, cport, NULL};
+        //std::cout << execpath << " " << sopargs[0] << " " << sopargs[1] << " "<< sopargs[2] << " "  << sopargs[3] << " " << sopenv[0] << std::endl;
         execve ( execpath, sopargs, sopenv );
         exit ( SVMSuccess );
     }
