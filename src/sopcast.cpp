@@ -33,7 +33,7 @@ namespace {
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 enum {
-    SleepTimeSec = 20
+    SleepTimeSec = 10
 };
 
 char* homedir = getenv ( "HOME" );
