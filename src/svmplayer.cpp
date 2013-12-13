@@ -30,11 +30,16 @@
 
 namespace {
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 struct VlcData {
     std::string source;
     Window winid;
-    volatile int terminate;
 };
+
+void stillplay() {
+    pthread_mutex_lock ( &mutex );
+}
 
 void* vlc_play ( void* data ) {
     libvlc_instance_t* inst;
@@ -49,16 +54,7 @@ void* vlc_play ( void* data ) {
     libvlc_media_player_set_xwindow ( mp, vlcdata.winid );
     libvlc_media_player_play ( mp );
 
-    while ( !vlcdata.terminate ) {
-        //play
-        if ( !libvlc_media_player_is_playing
-                || libvlc_media_player_get_position < 0
-                || !libvlc_media_player_will_play ) {
-
-            break;
-
-        }
-    }
+    stillplay();
 
     libvlc_media_player_stop ( mp );
     libvlc_media_player_release ( mp );
@@ -69,7 +65,8 @@ void* vlc_play ( void* data ) {
 
 using namespace svmp;
 
-SVMPlayer::SVMPlayer() {
+SVMPlayer::SVMPlayer()
+    : m_soport ( 8908 ) {
 
 }
 
@@ -78,23 +75,28 @@ SVMPlayer::~SVMPlayer() {
 }
 
 void SVMPlayer::play ( const std::string& url ) {
-    if ( m_sopcast.start ( url ) != SopCast::SVMSuccess ) {
+    if ( m_sopcast.start ( url, m_soport ) != SopCast::SVMSuccess ) {
         finish();
     }
 
     VlcData data;
     SVMWindow window;
     data.winid = window.create();
-    data.source = "http://localhost:8908";
-    data.terminate = 0;
+    data.source = "http://localhost:" + std::to_string ( m_soport );
+
+    pthread_mutex_lock ( &mutex );
+    
     pthread_t t1;
     pthread_create ( &t1, NULL, &vlc_play, &data );
 
     window.raise();
 
-    data.terminate = 1;
+    pthread_mutex_unlock ( &mutex );
 
     pthread_join ( t1, 0 );
+
+    pthread_mutex_unlock ( &mutex );
+    pthread_mutex_destroy ( &mutex );
 
     finish();
 }

@@ -34,6 +34,7 @@ public:
     void play(const std::string& url);
 private:
     SopCast m_sopcast;
+    int m_soport;
 
 private:
     void finish();
