@@ -30,6 +30,9 @@
 
 namespace {
 
+int replay_cnt = 50;
+int replay_sleep = 1;
+
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct VlcData {
@@ -53,6 +56,15 @@ void* vlc_play ( void* data ) {
     libvlc_media_release ( media );
     libvlc_media_player_set_xwindow ( mp, vlcdata.winid );
     libvlc_media_player_play ( mp );
+
+    // try to reconnect to localhost since sp-sc-auth isn't run immediately
+    for ( ; !libvlc_media_player_is_playing ( mp ) && replay_cnt ; --replay_cnt ) {
+
+        libvlc_media_player_stop ( mp );
+        libvlc_media_player_play ( mp );
+
+        sleep ( replay_sleep );
+    }
 
     stillplay();
 
@@ -85,7 +97,7 @@ void SVMPlayer::play ( const std::string& url ) {
     data.source = "http://localhost:" + std::to_string ( m_soport );
 
     pthread_mutex_lock ( &mutex );
-    
+
     pthread_t t1;
     pthread_create ( &t1, NULL, &vlc_play, &data );
 

@@ -33,7 +33,7 @@ namespace {
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 enum {
-    SleepTimeSec = 10
+    SleepTimeSec = 1
 };
 
 char* homedir = getenv ( "HOME" );
@@ -50,8 +50,8 @@ SopCast::SopCast()
     snprintf ( execpath, sizeof ( execpath ), "%s", homedir );
     strncat ( execpath, "/sopcast", sizeof ( execpath ) );
     snprintf ( ld_library_path, sizeof ( ld_library_path ), "LD_LIBRARY_PATH=" );
-    strncat ( ld_library_path, execpath, sizeof ( ld_library_path ));
-    strncat ( ld_library_path, "/lib", sizeof ( ld_library_path ));
+    strncat ( ld_library_path, execpath, sizeof ( ld_library_path ) );
+    strncat ( ld_library_path, "/lib", sizeof ( ld_library_path ) );
     strncat ( execpath, "/sp-sc-auth", sizeof ( execpath ) );
 }
 
@@ -75,7 +75,6 @@ int SopCast::start ( const std::string& url, int port ) {
     if ( m_sopid == 0 ) {
         char* sopenv[] = {ld_library_path, NULL};
         char* sopargs[] = {execpath, curl, csoport, cport, NULL};
-        //std::cout << execpath << " " << sopargs[0] << " " << sopargs[1] << " "<< sopargs[2] << " "  << sopargs[3] << " " << sopenv[0] << std::endl;
         execve ( execpath, sopargs, sopenv );
         exit ( SVMSuccess );
     }
@@ -87,7 +86,7 @@ int SopCast::start ( const std::string& url, int port ) {
 
 void SopCast::stop() {
     if ( m_sopid ) {
-        kill ( m_sopid, SIGTERM );
+        kill ( m_sopid, SIGKILL );
         int status;
         waitpid ( m_sopid, &status, CLD_EXITED | CLD_KILLED );
     }
