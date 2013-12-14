@@ -28,7 +28,8 @@ using namespace svmp;
 
 SVMWindow::SVMWindow()
     : m_width ( 600 )
-    , m_height ( 500 ) {
+    , m_height ( 500 )
+    , m_title("SvmPlayer") {
 
 }
 
@@ -49,7 +50,8 @@ int SVMWindow::create() {
     XSetWMProtocols ( m_display , m_xid, &delWindow, 1 );
     XSelectInput ( m_display, m_xid, ExposureMask | KeyPressMask );
     XMapWindow ( m_display, m_xid );
-
+    XStoreName(m_display, m_xid, m_title.c_str());
+    
     return m_xid;
 }
 

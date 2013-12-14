@@ -20,7 +20,7 @@
 
 #ifndef SVMWINDOW_H
 #define SVMWINDOW_H
-
+#include <string>
 #include<X11/Xlib.h>
 
 namespace svmp {
@@ -37,6 +37,7 @@ private:
     int s;
     Display* m_display;
     Window m_xid;
+    std::string m_title;
 };
 
 }
